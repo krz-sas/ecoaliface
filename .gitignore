@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Eric IDE
+*.e4p
+.eric6project/
+
