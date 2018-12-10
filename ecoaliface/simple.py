@@ -20,7 +20,7 @@ import requests.auth
 _LOGGER = logging.getLogger(__name__)
 
 
-class ECoalControler:
+class ECoalController:
     """
     ecoal solid fuel boiler controller interface.
 
@@ -56,7 +56,7 @@ class ECoalControler:
 
         # Keep convention that for Status.<attribute>
         # name of setting value method is
-        # ECoalControler.set_<attribute>
+        # ECoalController.set_<attribute>
 
         mode_auto = None  # on/off
 
@@ -209,6 +209,7 @@ class ECoalControler:
         self.log.debug("Receiveed status vals: %r", status_vals)
 
         # Vals diff for guessing
+        # 
         # old_status_vals = [2,1, .... ]
         # for i, val in enumerate(status_vals):
         # Skip list of values we know about
@@ -352,7 +353,7 @@ class ECoalControler:
 
 def test_contr():
     """Tests connection, performs simple operations."""
-    contr = ECoalControler("192.168.9.2", "admin", "admin")
+    contr = ECoalController("192.168.9.2", "admin", "admin")
     contr.get_cached_status()
     # contr.get_cached_status()
     # time.sleep(0.2)

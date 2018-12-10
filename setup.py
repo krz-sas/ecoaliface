@@ -9,7 +9,7 @@ setuptools.setup(
     name="ecoaliface",
     version="0.3.0",
     author="Mateusz Korniak",    
-    author_email="matkor@github",
+    author_email="matkorpypiorg@ant.gliwice.pl",
     description="Interface to eSterownik.pl eCoal water boiler controller.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -17,7 +17,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU License",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
+        "Development Status :: 4 - Beta", 
     ],
 )
