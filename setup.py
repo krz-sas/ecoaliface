@@ -11,6 +11,7 @@ setuptools.setup(
     author="Mateusz Korniak",    
     author_email="matkorpypiorg@ant.gliwice.pl",
     description="Interface to eSterownik.pl eCoal water boiler controller.",
+    license="GPLv3+",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/matkor/ecoaliface",
