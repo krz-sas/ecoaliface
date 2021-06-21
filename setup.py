@@ -15,6 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/matkor/ecoaliface",
     packages=setuptools.find_packages(),
+    install_requires=["requests"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
