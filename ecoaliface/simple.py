@@ -46,6 +46,8 @@ class ECoalController:
         193,240,163,146,5,52,103,86,120,73,26,43,188,141,222,239,
         130,179,224,209,70,119,36,21,59,10,89,104,255,206,157,172,
     )
+    VERSION_BRULI = "BRULI"
+    VERSION_ECOAL = "ECOAL"
 
     class Status:
         """
@@ -147,7 +149,7 @@ class ECoalController:
         self.status = None
         self.status_time = 0
 
-        self.version = None  # "BRULI" / "ECOAL"
+        self.version = None  #     VERSION_BRULI / VERSION_ECOAL
         self.get_version()
 
     @staticmethod
@@ -184,16 +186,15 @@ class ECoalController:
         if resp.status_code != 200:
             return
         buf = resp.content
-        # status: b'[2,1,6,6,0,0,76,0,0,0,0,0
         vals = self._parse_seq_of_ints(buf)
 
         if vals[8:11] == [48, 46, 49]:
-            self.version = "BRULI"
+            self.version = self.VERSION_BRULI 
         elif vals[8:11] == [48, 46, 51]:
-            self.version = "ECOAL"
+            self.version = self.VERSION_ECOAL
         else:
             self.version = None
-        self.log.debug("Detected version: %r", self.version)
+        self.log.debug("Detected controller version: %r", self.version)
         return self.version
 
     def get_status(self):
@@ -267,7 +268,7 @@ class ECoalController:
             status_vals[49],
         )
 
-        status.feeder_work_time = status_vals[65] << 8 | status_vals[64]
+        status.feeder_work_time = status_vals[65] << 8 | status_vals[64]   # TODO: coal_feeder_work_time ?
 
         self.status = status
         self.status_time = time.time()
@@ -286,6 +287,10 @@ class ECoalController:
                 or time.time() - self.status_time > max_cache_period):
             self.get_status()
         return self.status
+        
+        
+    def invalidate_cache(self):
+        self.status = None
 
     def set_central_heating_pump(self, state):
         """Turn on/off central heating pump."""
@@ -329,11 +334,123 @@ class ECoalController:
         self.log.warning("set_domestic_hot_water_pump() failed: %s", resp)
         return resp
 
-    def set_target_feedwater_temp(self, value):
+    def set_target_feedwater_temp(self, target_temp):
         """Set target feedwater temperature to given Celcius degrees."""
-        byte = int(value)
-        buf = [0x01, 0x00, 0x02, 0x00, 0x28, 0x02, 0x00, byte & 0xFF, 0x00]
-        self._calc_crc_get_request(buf)
+        buf = [0x01, 0x00, 0x02, 0x00, 0x28, 0x02, 0x00, int(target_temp) & 0xff, 0x00]
+        resp = self._calc_crc_get_request(buf)
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_target_feedwater_temp(%r) failed: %s", taget_temp, resp)
+        return resp
+        
+        
+    def set_auto_mode(self, value):
+        """
+        Set auto mode for boiler on of
+        """
+        if value:
+            resp = self._get_request("020100020033020001006503")
+        else:
+            resp = self._get_request("020100020033020000009103")
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_auto_mode(%r) failed: %s", value, resp)
+        return resp
+                    
+                    
+    def set_coal_feeder(self, value):
+        """
+        Turns on/off coal feeder 
+        """
+        if value:
+            resp = self._get_request("02010005000C0100011603")
+        else:
+            resp = self._get_request("02010005000C0100002703")
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_coal_feeder(%r) failed: %s", value, resp)
+        return resp
+        
+        
+    def set_air_pump(self, value):
+        """
+        Turns on/off air pump
+        NOTE: Seems 25% is minimum for (some instances) ecoal controller
+        """
+        if value:
+            resp = self._get_request("02010005000B0100018403")
+        else:
+            resp = self._get_request("02010005000B010000B503")
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_air_pump(%r) failed: %s", value, resp)
+        return resp
+        
+        
+    def set_air_pump_power(self, power):
+        """
+        Sets air pump power
+        """
+        buf = [0x01, 0x00, 0x02, 0x00, 0x08, 0x02, 0x00, power & 0xff, 0x00]
+        resp = self._calc_crc_get_request(buf)
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_air_pump_power(%r) failed: %s", power, resp)
+        return resp
+        
+    #
+    # Manual mode settings
+    # 
+    def set_manual_mode_coal_feeder_time(self, value):
+        """
+        TODO: podawanie w trybie ręcznym ?
+        """
+        if self.version == self.VERSION_BRULI:
+            buf = [0x01, 0x00, 0x02, 0x00, 0x22, 0x02, 0x00, value & 0xff, (value>>8) & 0xff]
+        else: 
+            if self.version != self.VERSION_ECOAL:
+                self.log.warning("set_coal_manual_feeder(%r): Unknown controller version, sending as to ecaol controller", value)
+            buf = [0x01, 0x00, 0x02, 0x00, 0x52, 0x02, 0x00, value & 0xff, (value>>8) & 0xff]
+        resp = self._calc_crc_get_request(buf)
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_manual_mode_coal_feeder_time(%r) failed: %s", value, resp)
+        return resp
+
+
+    def set_manual_mode_stop_time(self, value):
+        """
+        TODO: czas postoju w trybie ręcznym ?
+        """
+        if self.version == self.VERSION_BRULI:
+            buf = [0x01, 0x00, 0x02, 0x00, 0x23, 0x02, 0x00, value & 0xff, (value>>8) & 0xff]
+        else: 
+            if self.version != self.VERSION_ECOAL:
+                self.log.warning("set_coal_manual_feeder(%r): Unknown controller version, sending as to ecaol controller", value)
+            buf = [0x01, 0x00, 0x02, 0x00, 0x76, 0x02, 0x00, value & 0xff, (value>>8) & 0xff]
+        resp = self._calc_crc_get_request(buf)
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_manual_mode_stop_time(%r) failed: %s", value, resp)
+        return resp
+        
+        
+    def set_manual_mode_air_pump(self, value):
+        """
+        TODO: dmuchawa trybie ręcznym ?
+        """
+        if self.version == self.VERSION_BRULI:
+            buf = [0x01, 0x00, 0x02, 0x00, 0x0F, 0x02, 0x00, value & 0xff, 0x00]
+        else: 
+            if self.version != self.VERSION_ECOAL:
+                self.log.warning("set_coal_manual_feeder(%r): Unknown controller version, sending as to ecaol controller", value)
+            buf = [0x01, 0x00, 0x02, 0x00, 0x61, 0x02, 0x00, value & 0xff, 0x00]
+        resp = self._calc_crc_get_request(buf)
+        if resp.status_code == 200:
+            return None
+        self.log.warning("set_manual_mode_stop_time(%r) failed: %s", value, resp)
+        return resp
+
 
     def _calc_crc_get_request(self, buf):
         """Calculate CRC and expand buf command to be sent to controller."""
@@ -356,11 +473,21 @@ def test_contr():
     contr = ECoalController("192.168.9.2", "admin", "admin")
     contr.get_cached_status()
     # contr.get_cached_status()
-    # time.sleep(0.2)
+    time.sleep(0.2)
     # contr.get_cached_status()
     # contr.set_central_heating_pump(0)
     # contr.set_domestic_hot_water_pump(0)
-    contr.set_central_heating_pump2(0)
+    # contr.set_central_heating_pump2(0)
+    # contr.set_coal_feeder(0)
+    # contr.set_air_pump_power(50)
+    # contr.set_air_pump(0)
+    # contr.set_target_feedwater_temp(75)
+    
+    # TODO: Not tested to actually work commands
+    # contr.set_auto_mode(0)
+    # contr.set_coal_manual_feeder(1)
+    # contr.set_manual_mode_stop_time(520)
+    # contr.set_manual_mode_air_pump(50)
     contr.get_status()
 
 

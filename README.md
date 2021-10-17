@@ -4,8 +4,12 @@ Implements small subset of operations/readings available in controller.
 
 Based on code from https://github.com/uzi18/sterownik .
 
-
 ## Versions
+
+### 0.5.0
+Added all methods available in https://github.com/uzi18/sterownik code.
+git tag -a v0.5.0 -m "Version 0.5.0"
+
 
 ### 0.4.0
 git tag -a v0.4.0 -m "Version 0.4.0"
