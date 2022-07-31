@@ -6,12 +6,13 @@ Based on code from https://github.com/uzi18/sterownik .
 
 ## Versions
 
+### new
+Added async examples
+git tag -a v0.6.0 -m "Version 0.6.0"
+
 ### 0.5.0
 Added all methods available in https://github.com/uzi18/sterownik code.
-git tag -a v0.5.0 -m "Version 0.5.0"
 
 
 ### 0.4.0
-git tag -a v0.4.0 -m "Version 0.4.0"
-
 Initial public release for Homeassistant component.
