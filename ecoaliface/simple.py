@@ -70,7 +70,7 @@ class ECoalController:
         feedwater_in_temp = None
         feedwater_out_temp = None
         target_feedwater_temp = None
-        coal_feeder_temp = None
+        fuel_feeder_temp = None
         exhaust_temp = None
 
         central_heating_pump = None  # on/off
@@ -125,7 +125,7 @@ class ECoalController:
                 txt += " Feeder:Off"
             txt += " Feeder work time: %ds temp: %.1f\xb0C" % (
                 self.feeder_work_time,
-                self.coal_feeder_temp,
+                self.fuel_feeder_temp,
             )
             if self.air_pump:
                 txt += " Air (%d%%):On" % (self.air_pump_power)
@@ -236,7 +236,7 @@ class ECoalController:
         status.feedwater_in_temp = self._calc_temp(
             status_vals[25], status_vals[24]
         )
-        status.coal_feeder_temp = self._calc_temp(
+        status.fuel_feeder_temp = self._calc_temp(
             status_vals[27], status_vals[26]
         )
         status.feedwater_out_temp = self._calc_temp(

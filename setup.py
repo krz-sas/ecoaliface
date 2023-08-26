@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ecoaliface",
-    version="0.5.0",
+    version="0.5.1",
     author="Mateusz Korniak",    
     author_email="matkorpypiorg@ant.gliwice.pl",
     description="Interface to eSterownik.pl eCoal water boiler controller.",
