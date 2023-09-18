@@ -271,9 +271,9 @@ class ECoalController:
             status_vals[49],
         )
 
-        status.feeder_current_run_time = status_vals[65] << 8 | status_vals[64]   # TODO: coal_feeder_work_time ?
+        status.feeder_current_run_time = status_vals[65] << 8 | status_vals[64]   
 
-        status.feeder_max_run_time = self.get_max_feeder_runtime()
+        status.feeder_max_run_time = self.get_feeder_max_run_time()
 
         self.status = status
         self.status_time = time.time()
@@ -295,7 +295,7 @@ class ECoalController:
         return self.status
 
 
-    def get_max_feeder_runtime(self):
+    def get_feeder_max_run_time(self):
         resp = self._get_request("02010001004F00007903");
         if resp.status_code != 200:
             return
