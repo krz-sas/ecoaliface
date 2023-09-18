@@ -70,14 +70,15 @@ class ECoalController:
         feedwater_in_temp = None
         feedwater_out_temp = None
         target_feedwater_temp = None
-        coal_feeder_temp = None
+        fuel_feeder_temp = None
         exhaust_temp = None
 
         central_heating_pump = None  # on/off
         domestic_hot_water_pump = None  # on/off
         central_heating_pump2 = None  # on/off
         coal_feeder = None  # on/off
-        feeder_work_time = None  # seconds
+        feeder_max_run_time = None  # seconds
+        feeder_current_run_time = None  # seconds
         air_pump = None  # on/off
         air_pump_power = None  # perc
 
@@ -123,9 +124,11 @@ class ECoalController:
                 txt += " Feeder:On"
             else:
                 txt += " Feeder:Off"
-            txt += " Feeder work time: %ds temp: %.1f\xb0C" % (
-                self.feeder_work_time,
-                self.coal_feeder_temp,
+            txt += " Feeder max work time: %dmin, run time: %ds, run time[min]: %dmin temp: %.1f\xb0C" % (
+                self.feeder_max_run_time,
+                self.feeder_current_run_time,
+                self.feeder_current_run_time/60.0,
+                self.fuel_feeder_temp,
             )
             if self.air_pump:
                 txt += " Air (%d%%):On" % (self.air_pump_power)
@@ -236,7 +239,7 @@ class ECoalController:
         status.feedwater_in_temp = self._calc_temp(
             status_vals[25], status_vals[24]
         )
-        status.coal_feeder_temp = self._calc_temp(
+        status.fuel_feeder_temp = self._calc_temp(
             status_vals[27], status_vals[26]
         )
         status.feedwater_out_temp = self._calc_temp(
@@ -268,12 +271,15 @@ class ECoalController:
             status_vals[49],
         )
 
-        status.feeder_work_time = status_vals[65] << 8 | status_vals[64]   # TODO: coal_feeder_work_time ?
+        status.feeder_current_run_time = status_vals[65] << 8 | status_vals[64]   # TODO: coal_feeder_work_time ?
+
+        status.feeder_max_run_time = self.get_max_feeder_runtime()
 
         self.status = status
         self.status_time = time.time()
         self.log.debug("New status: %s", self.status)
         return self.status
+
 
     def get_cached_status(self, max_cache_period=0.2):
         """
@@ -287,7 +293,17 @@ class ECoalController:
                 or time.time() - self.status_time > max_cache_period):
             self.get_status()
         return self.status
-        
+
+
+    def get_max_feeder_runtime(self):
+        resp = self._get_request("02010001004F00007903");
+        if resp.status_code != 200:
+            return
+        buf = resp.content
+        status_vals = self._parse_seq_of_ints(buf)
+        self.log.debug("Received fuel status vals: %r", status_vals)
+
+        return (status_vals[9] << 8 | status_vals[8]);
         
     def invalidate_cache(self):
         self.status = None
