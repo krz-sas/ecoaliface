@@ -6,13 +6,15 @@ Based on code from https://github.com/uzi18/sterownik .
 
 ## Versions
 
-### new
+### 0.6.0
+Add max fuel feeder time parameter to enable calculation of fuel level
 Added async examples
-git tag -a v0.6.0 -m "Version 0.6.0"
+
+### 0.5.1
+Fixed an incorrect parameter name to match the homeassistant ecoal boiler plugin
 
 ### 0.5.0
 Added all methods available in https://github.com/uzi18/sterownik code.
-
 
 ### 0.4.0
 Initial public release for Homeassistant component.
