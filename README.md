@@ -6,6 +6,9 @@ Based on code from https://github.com/uzi18/sterownik .
 
 ## Versions
 
+### 0.7.0
+Add fuel left calculation logic
+
 ### 0.6.0
 Add max fuel feeder time parameter to enable calculation of fuel level
 Added async examples
