@@ -77,7 +77,7 @@ class ECoalController:
         domestic_hot_water_pump = None  # on/off
         central_heating_pump2 = None  # on/off
         coal_feeder = None  # on/off
-        feeder_max_run_time = None  # seconds
+        feeder_max_run_time = None  # minutes
         feeder_current_run_time = None  # seconds
         air_pump = None  # on/off
         air_pump_power = None  # perc
