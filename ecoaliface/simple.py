@@ -271,7 +271,7 @@ class ECoalController:
             status_vals[49],
         )
 
-        status.feeder_current_run_time = status_vals[65] << 8 | status_vals[64]   
+        status.feeder_current_run_time = status_vals[65] << 8 | status_vals[64]
 
         status.feeder_max_run_time = self.get_feeder_max_run_time()
 
@@ -304,7 +304,23 @@ class ECoalController:
         self.log.debug("Received fuel status vals: %r", status_vals)
 
         return (status_vals[9] << 8 | status_vals[8]);
-        
+
+    def get_feeder_coal_left_percent(self):
+        _status = self.get_cached_status()
+        coal_left_percent = 100 - (
+            min(
+                round(
+                    _status.feeder_current_run_time
+                    / 60
+                    / _status.feeder_max_run_time
+                    * 100,
+                    1,
+                ),
+                100,
+            )
+        )
+        return coal_left_percent
+
     def invalidate_cache(self):
         self.status = None
 
